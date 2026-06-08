@@ -1,0 +1,27 @@
+services:
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile.fastapi
+    ports:
+      - "8000:8000"
+    environment:
+      SECRET_KEY: secret-dev-key
+      DATABASE_URL: sqlite:///./data/app.db
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+
+  flask:
+    build:
+      context: .
+      dockerfile: Dockerfile.flask
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_SECRET_KEY: flask-dev-key
+      FASTAPI_URL: http://fastapi:8000
+    depends_on:
+      - fastapi
+    volumes:
+      - ./logs:/app/logs
