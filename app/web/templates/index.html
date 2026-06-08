@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Рекомендации книг{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card p-4">
+            <h2 class="text-center mb-4">📚 Найдите похожие книги</h2>
+            <p class="text-center text-muted">Напишите, какая книга вам понравилась, и нейросеть найдёт похожие по смыслу</p>
+            
+            <form method="POST">
+                {{ form.csrf_token }}
+                <div class="mb-3">
+                    {{ form.text.label(class="form-label") }}
+                    {{ form.text(class="form-control", rows=5, placeholder="Пример: Мне очень понравилась книга про мальчика, который узнаёт, что он волшебник, и поступает в школу магии...") }}
+                    {% for error in form.text.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {{ form.submit(class="btn btn-primary w-100") }}
+            </form>
+
+            {% if recommendations %}
+                <div class="mt-4">
+                    <h4>🎯 Похожие книги:</h4>
+                    {% for book in recommendations %}
+                        <div class="result-card">
+                            <h5>{{ book.title }}</h5>
+                            <p class="text-muted">{{ book.author }}</p>
+                            <p>{{ book.description }}</p>
+                            <small class="text-success">Похожесть: {{ (book.similarity * 100)|round(1) }}%</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

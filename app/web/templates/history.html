@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}История запросов{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card p-4">
+            <h2 class="text-center mb-4">История рекомендаций</h2>
+            
+            {% if recommendations %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Ваш запрос</th>
+                                <th>Рекомендованная книга</th>
+                                <th>Автор</th>
+                                <th>Похожесть</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rec in recommendations %}
+                            <tr>
+                                <td>{{ rec.created_at[:19]|replace('T', ' ') }}</td>
+                                <td>{{ rec.input_text[:80] }}{% if rec.input_text|length > 80 %}...{% endif %}</td>
+                                <td>{{ rec.recommended_book_title }}</td>
+                                <td>{{ rec.recommended_book_author }}</td>
+                                <td>{{ (rec.similarity_score * 100)|round(1) }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-center text-muted">У вас пока нет истории. Сделайте первый запрос на главной странице.</p>
+            {% endif %}
+            
+            <div class="text-center mt-3">
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary">Новый поиск</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
