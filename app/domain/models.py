@@ -4,7 +4,7 @@ from typing import Optional
 from enum import Enum
 
 
-class PredictionSource(Enum):
+class RecommendationSource(Enum):
     ML_MODEL = "ml_model"
     RULE_BASED = "rule_based"
 
@@ -18,11 +18,12 @@ class User:
 
 
 @dataclass
-class Prediction:
+class Recommendation:
     id: Optional[int]
     user_id: int
     input_text: str
-    predicted_genre: str
-    confidence: float
-    source: PredictionSource
+    recommended_book_title: str
+    recommended_book_author: str
+    similarity_score: float
+    source: RecommendationSource
     created_at: datetime

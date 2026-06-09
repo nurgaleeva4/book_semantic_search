@@ -1,5 +1,5 @@
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from app.domain.interfaces import UserRepository, RecommendationRepository
 from app.domain.models import User, Recommendation, RecommendationSource
 from app.infrastructure.database import UserModel, RecommendationModel
@@ -8,14 +8,13 @@ from typing import Optional, List
 
 
 class PostgresUserRepository(UserRepository):
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: Session):
         self.session = session
 
-    async def get_by_username(self, username: str) -> Optional[User]:
-        result = await self.session.execute(
+    def get_by_username(self, username: str) -> Optional[User]:
+        user = self.session.execute(
             select(UserModel).where(UserModel.username == username)
-        )
-        user = result.scalar_one_or_none()
+        ).scalar_one_or_none()
         if user:
             return User(
                 id=user.id,
@@ -25,10 +24,10 @@ class PostgresUserRepository(UserRepository):
             )
         return None
 
-    async def create(self, username: str, hashed_password: str) -> User:
+    def create(self, username: str, hashed_password: str) -> User:
         user = UserModel(username=username, hashed_password=hashed_password)
         self.session.add(user)
-        await self.session.flush()
+        self.session.flush()
         return User(
             id=user.id,
             username=user.username,
@@ -36,11 +35,10 @@ class PostgresUserRepository(UserRepository):
             created_at=user.created_at
         )
 
-    async def get_by_id(self, user_id: int) -> Optional[User]:
-        result = await self.session.execute(
+    def get_by_id(self, user_id: int) -> Optional[User]:
+        user = self.session.execute(
             select(UserModel).where(UserModel.id == user_id)
-        )
-        user = result.scalar_one_or_none()
+        ).scalar_one_or_none()
         if user:
             return User(
                 id=user.id,
@@ -52,10 +50,10 @@ class PostgresUserRepository(UserRepository):
 
 
 class PostgresRecommendationRepository(RecommendationRepository):
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: Session):
         self.session = session
 
-    async def create(self, recommendation: Recommendation) -> Recommendation:
+    def create(self, recommendation: Recommendation) -> Recommendation:
         rec = RecommendationModel(
             user_id=recommendation.user_id,
             input_text=recommendation.input_text,
@@ -66,18 +64,17 @@ class PostgresRecommendationRepository(RecommendationRepository):
             created_at=recommendation.created_at or datetime.utcnow()
         )
         self.session.add(rec)
-        await self.session.flush()
+        self.session.flush()
         recommendation.id = rec.id
         return recommendation
 
-    async def get_by_user_id(self, user_id: int, limit: int = 50) -> List[Recommendation]:
-        result = await self.session.execute(
+    def get_by_user_id(self, user_id: int, limit: int = 50) -> List[Recommendation]:
+        recs = self.session.execute(
             select(RecommendationModel)
             .where(RecommendationModel.user_id == user_id)
             .order_by(RecommendationModel.created_at.desc())
             .limit(limit)
-        )
-        recs = result.scalars().all()
+        ).scalars().all()
         return [
             Recommendation(
                 id=r.id,

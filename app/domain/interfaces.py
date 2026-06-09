@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
-from app.domain.models import User, Prediction
+from app.domain.models import User, Recommendation, RecommendationSource
 
 
 class UserRepository(ABC):
@@ -17,17 +17,18 @@ class UserRepository(ABC):
         pass
 
 
-class PredictionRepository(ABC):
+class RecommendationRepository(ABC):
     @abstractmethod
-    async def create(self, prediction: Prediction) -> Prediction:
+    async def create(self, recommendation: Recommendation) -> Recommendation:
         pass
 
     @abstractmethod
-    async def get_by_user_id(self, user_id: int, limit: int = 50) -> List[Prediction]:
+    async def get_by_user_id(self, user_id: int, limit: int = 50) -> List[Recommendation]:
         pass
 
 
-class MLModelInterface(ABC):
+class RecommenderModelInterface(ABC):
     @abstractmethod
-    def predict(self, text: str) -> tuple[str, float]:
+    def recommend(self, text: str) -> List[dict]:
+        """Возвращает список рекомендаций: list of {title, author, description, similarity}"""
         pass

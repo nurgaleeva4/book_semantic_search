@@ -8,8 +8,17 @@ class RecommendationService:
         self.recommendation_repo = recommendation_repo
         self.recommender = recommender
 
-    async def recommend(self, user_id: int, input_text: str) -> list:
-        """Возвращает рекомендации и сохраняет результат"""
+    def recommend(self, user_id: int, input_text: str) -> list:
+        """
+        Возвращает рекомендации похожих книг и сохраняет результат в историю.
+
+        Args:
+            user_id: ID пользователя
+            input_text: Описание книги, которая понравилась
+
+        Returns:
+            list: Список рекомендаций (title, author, description, similarity)
+        """
         recommendations = self.recommender.recommend(input_text)
 
         for rec in recommendations:
@@ -23,12 +32,23 @@ class RecommendationService:
                 source=RecommendationSource.ML_MODEL,
                 created_at=datetime.utcnow()
             )
-            await self.recommendation_repo.create(recommendation)
+            self.recommendation_repo.create(recommendation)
 
         return recommendations
 
-    async def get_user_history(self, user_id: int, limit: int = 50) -> list:
-        recommendations = await self.recommendation_repo.get_by_user_id(user_id, limit)
+    def get_user_history(self, user_id: int, limit: int = 50) -> list:
+        """
+        Возвращает историю рекомендаций пользователя.
+
+        Args:
+            user_id: ID пользователя
+            limit: Максимальное количество записей
+
+        Returns:
+            list: Список рекомендаций с полями id, input_text, recommended_book_title,
+                  recommended_book_author, similarity_score, created_at
+        """
+        recommendations = self.recommendation_repo.get_by_user_id(user_id, limit)
         return [
             {
                 "id": r.id,

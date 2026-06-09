@@ -1,5 +1,6 @@
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, DeclarativeBase, Session
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, Text, DateTime, ForeignKey, Float
 from datetime import datetime
 import os
@@ -31,11 +32,15 @@ class RecommendationModel(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./data/app.db")
-engine = create_async_engine(DATABASE_URL, echo=True)
-AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/app.db")
+engine = create_engine(DATABASE_URL, echo=True)
+SessionLocal = sessionmaker(engine, expire_on_commit=False)
 
 
-async def get_db() -> AsyncSession:
-    async with AsyncSessionLocal() as session:
-        yield session
+def get_db() -> Session:
+    """Возвращает сессию базы данных (синхронная версия)"""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
